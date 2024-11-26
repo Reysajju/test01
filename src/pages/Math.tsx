@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
-import { useUserStore } from '../store/userStore';
-import { Calculator } from 'lucide-react';
+import { useUserStore } from '../store/userStore'; // Make sure the store is correctly implemented
+import { Calculator } from 'lucide-react'; // Ensure correct import from lucide-react
 
 interface Problem {
   num1: number;
@@ -54,10 +54,10 @@ export default function Math() {
     const isCorrect = Number(userAnswer) === problem.answer;
     setFeedback(isCorrect ? 'correct' : 'incorrect');
     setAttempts(attempts + 1);
-    
+
     if (isCorrect) {
       setScore(score + 1);
-      updateMathScore(1);
+      updateMathScore(1); // Make sure this updates the global score or state
       setTimeout(() => {
         setProblem(generateProblem());
         setUserAnswer('');
