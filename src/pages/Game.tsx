@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useUserStore } from '../store/userStore';
 import { GamepadIcon, Trophy } from 'lucide-react';
 import { paragraphs } from '../data/paragraphs';
+import { speakWord } from '../utils/speechUtils';
 
 interface Word {
   word: string;
@@ -25,6 +26,7 @@ export default function Game() {
   const [feedback, setFeedback] = useState<'correct' | 'incorrect' | null>(null);
   const [streak, setStreak] = useState(0);
   const updateGameProgress = useUserStore(state => state.updateGameProgress);
+  const [isPlaying, setIsPlaying] = useState(false);
 
   useEffect(() => {
     selectNewWord();
@@ -38,6 +40,13 @@ export default function Game() {
     });
     const randomWord = levelWords[Math.floor(Math.random() * levelWords.length)];
     setCurrentWord(randomWord);
+  };
+
+  const playWord = () => {
+    if (currentWord && !isPlaying) {
+      setIsPlaying(true);
+      speakWord(currentWord.word, () => setIsPlaying(false));
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -56,8 +65,13 @@ export default function Game() {
         setStreak(0);
         setCurrentLevel(prev => Math.min(prev + 1, 30));
       }
+
+      // Play a success sound
+      speakWord('Correct! Well done!');
     } else {
       setStreak(0);
+      // Play the correct word again
+      speakWord(`The correct spelling is ${currentWord.word}`);
     }
 
     updateGameProgress(currentLevel, score);
@@ -66,7 +80,7 @@ export default function Game() {
       setUserInput('');
       setFeedback(null);
       selectNewWord();
-    }, 1000);
+    }, 2000);
   };
 
   return (
@@ -87,13 +101,13 @@ export default function Game() {
               <div className="text-center">
                 <p className="text-lg font-medium text-gray-700 mb-2">Listen and type:</p>
                 <button
-                  onClick={() => {
-                    const utterance = new SpeechSynthesisUtterance(currentWord.word);
-                    window.speechSynthesis.speak(utterance);
-                  }}
-                  className="bg-purple-100 text-purple-700 px-4 py-2 rounded-full hover:bg-purple-200 transition duration-200"
+                  onClick={playWord}
+                  disabled={isPlaying}
+                  className={`bg-purple-100 text-purple-700 px-6 py-3 rounded-full hover:bg-purple-200 transition duration-200 ${
+                    isPlaying ? 'opacity-75 cursor-not-allowed' : ''
+                  }`}
                 >
-                  🔊 Play Word
+                  🔊 {isPlaying ? 'Playing...' : 'Play Word'}
                 </button>
               </div>
 
